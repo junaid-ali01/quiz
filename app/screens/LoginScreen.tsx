@@ -1,54 +1,36 @@
-import { observer } from "mobx-react-lite"
-import React, { ComponentType, FC, useEffect, useMemo, useRef, useState } from "react"
-import { TextInput, TextStyle, ViewStyle } from "react-native"
+import React, { ComponentType, FC, useMemo, useRef, useState } from "react"
+import { TextInput, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native"
 import { Button, Icon, Screen, Text, TextField, TextFieldAccessoryProps } from "../components"
-import { useStores } from "../models"
 import { AppStackScreenProps } from "../navigators"
 import { colors, spacing } from "../theme"
+import { useAppDispatch } from "app/store/hooks"
+import { ErrorMessage, Formik } from "formik"
+import * as Yup from "yup"
+import { loginSuccess } from "app/store/authSlice"
 
 interface LoginScreenProps extends AppStackScreenProps<"Login"> {}
+interface detail {
+  email: string
+  password: string
+}
 
-export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_props) {
+export const LoginScreen: FC<LoginScreenProps> = (_props) => {
+  const { navigation } = _props
   const authPasswordInput = useRef<TextInput>(null)
+  const dispatch = useAppDispatch()
 
-  const [authPassword, setAuthPassword] = useState("")
   const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState(true)
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [attemptsCount, setAttemptsCount] = useState(0)
-  const {
-    authenticationStore: { authEmail, setAuthEmail, setAuthToken, validationError },
-  } = useStores()
+  const [attemptsCount] = useState(0)
 
-  useEffect(() => {
-    // Here is where you could fetch credentials from keychain or storage
-    // and pre-fill the form fields.
-    setAuthEmail("ignite@infinite.red")
-    setAuthPassword("ign1teIsAwes0m3")
-
-    // Return a "cleanup" function that React will run when the component unmounts
-    return () => {
-      setAuthPassword("")
-      setAuthEmail("")
-    }
-  }, [])
-
-  const error = isSubmitted ? validationError : ""
-
-  function login() {
-    setIsSubmitted(true)
-    setAttemptsCount(attemptsCount + 1)
-
-    if (validationError) return
-
-    // Make a request to your server to get an authentication token.
-    // If successful, reset the fields and set the token.
-    setIsSubmitted(false)
-    setAuthPassword("")
-    setAuthEmail("")
-
-    // We'll mock this with a fake token.
-    setAuthToken(String(Date.now()))
+  const initialValues: detail = {
+    email: "ignite@infinite.red",
+    password: "ign1teIsAwes0m3",
   }
+
+  const validationSchema = Yup.object().shape({
+    email: Yup.string().email("Invalid email").required("Email is required"),
+    password: Yup.string().required("Password is required"),
+  })
 
   const PasswordRightAccessory: ComponentType<TextFieldAccessoryProps> = useMemo(
     () =>
@@ -73,57 +55,82 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
       safeAreaEdges={["top", "bottom"]}
     >
       <Text testID="login-heading" tx="loginScreen.signIn" preset="heading" style={$signIn} />
-      <Text tx="loginScreen.enterDetails" preset="subheading" style={$enterDetails} />
+      <Text tx="common.titleHead" preset="formLabel" style={$enterDetails} />
       {attemptsCount > 2 && <Text tx="loginScreen.hint" size="sm" weight="light" style={$hint} />}
 
-      <TextField
-        value={authEmail}
-        onChangeText={setAuthEmail}
-        containerStyle={$textField}
-        autoCapitalize="none"
-        autoComplete="email"
-        autoCorrect={false}
-        keyboardType="email-address"
-        labelTx="loginScreen.emailFieldLabel"
-        placeholderTx="loginScreen.emailFieldPlaceholder"
-        helper={error}
-        status={error ? "error" : undefined}
-        onSubmitEditing={() => authPasswordInput.current?.focus()}
-      />
+      <Formik
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={(values, actions) => {
+          dispatch(loginSuccess(values))
+          actions.setSubmitting(false)
+          navigation.navigate("Welcome")
+        }}
+      >
+        {({ handleChange, handleBlur, handleSubmit, values }) => (
+          <>
+            <TextField
+              value={values.email}
+              onChangeText={handleChange("email")}
+              onBlur={handleBlur("email")}
+              containerStyle={$textField}
+              autoCapitalize="none"
+              autoComplete="email"
+              autoCorrect={false}
+              keyboardType="email-address"
+              labelTx="loginScreen.emailFieldLabel"
+              placeholderTx="loginScreen.emailFieldPlaceholder"
+              onSubmitEditing={() => authPasswordInput.current?.focus()}
+            />
+            <ErrorMessage name="email" render={(msg) => <Text style={$textError}>{msg}</Text>} />
 
-      <TextField
-        ref={authPasswordInput}
-        value={authPassword}
-        onChangeText={setAuthPassword}
-        containerStyle={$textField}
-        autoCapitalize="none"
-        autoComplete="password"
-        autoCorrect={false}
-        secureTextEntry={isAuthPasswordHidden}
-        labelTx="loginScreen.passwordFieldLabel"
-        placeholderTx="loginScreen.passwordFieldPlaceholder"
-        onSubmitEditing={login}
-        RightAccessory={PasswordRightAccessory}
-      />
+            <TextField
+              ref={authPasswordInput}
+              value={values.password}
+              onChangeText={handleChange("password")}
+              onBlur={handleBlur("password")}
+              containerStyle={$textField}
+              autoCapitalize="none"
+              autoComplete="password"
+              autoCorrect={false}
+              secureTextEntry={isAuthPasswordHidden}
+              labelTx="loginScreen.passwordFieldLabel"
+              placeholderTx="loginScreen.passwordFieldPlaceholder"
+              RightAccessory={PasswordRightAccessory}
+            />
+            <ErrorMessage name="password" render={(msg) => <Text style={$textError}>{msg}</Text>} />
 
-      <Button
-        testID="login-button"
-        tx="loginScreen.tapToSignIn"
-        style={$tapButton}
-        preset="reversed"
-        onPress={login}
-      />
+            <Button
+              testID="login-button"
+              tx="loginScreen.tapToSignIn"
+              style={$tapButton}
+              preset="awesomeButton"
+              onPress={handleSubmit}
+            />
+          </>
+        )}
+      </Formik>
+      <View style={$bottomView}>
+        <Text tx="loginScreen.bottomText" />
+        <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+          <Text tx="loginScreen.bottomSignup" style={$bottomtext} />
+        </TouchableOpacity>
+      </View>
     </Screen>
   )
-})
+}
 
 const $screenContentContainer: ViewStyle = {
   paddingVertical: spacing.xxl,
-  paddingHorizontal: spacing.lg,
+  paddingHorizontal: spacing.md,
 }
 
 const $signIn: TextStyle = {
   marginBottom: spacing.sm,
+  marginTop: spacing.lg,
+}
+const $textError: TextStyle = {
+  color: colors.error,
 }
 
 const $enterDetails: TextStyle = {
@@ -137,8 +144,18 @@ const $hint: TextStyle = {
 
 const $textField: ViewStyle = {
   marginBottom: spacing.lg,
+  marginTop: spacing.xs,
 }
 
 const $tapButton: ViewStyle = {
   marginTop: spacing.xs,
+  borderRadius: spacing.lg,
+}
+const $bottomView: ViewStyle = {
+  flexDirection: "row",
+  alignSelf: "center",
+  marginTop: spacing.xs,
+}
+const $bottomtext: TextStyle = {
+  color: colors.palette.primary700,
 }

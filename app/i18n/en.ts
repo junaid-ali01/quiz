@@ -4,6 +4,21 @@ const en = {
     cancel: "Cancel",
     back: "Back",
     logOut: "Log Out",
+    titleHead:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lacus, eget erat bibendum in magna pretium rhoncus ut.",
+  },
+  OtpScreen: {
+    HeadingText: "Verify Mobile Number",
+    SubHeadingText:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lacus, eget erat bibendum in magna pretium rhoncus ut +2348116915104.",
+    OtpBottomText: "Incorrect mobile Number? ",
+    otpEdit: "Edit now",
+    buttonText: "Confirm",
+  },
+  startingScreen: {
+    labeltext: "Welcome to the world’s most imaginativemarketplace",
+    buttonText: "Get Started",
+    bottomButton: "I’m already a member",
   },
   welcomeScreen: {
     postscript:
@@ -40,6 +55,16 @@ const en = {
     passwordFieldPlaceholder: "Super secret password here",
     tapToSignIn: "Tap to sign in!",
     hint: "Hint: you can use any email address and your favorite password :)",
+    bottomText: "Are you new here? ",
+    bottomSignup: " Sign up",
+  },
+  SignupScreen: {
+    nameFieldLabel: "Name",
+    tapToSignUp: "Register",
+    nameFieldPlaceholder: "Enter your Full Name",
+    signup: "Register Account",
+    bottomText: "Already have an account? ",
+    bottomSignup: "Sign in",
   },
   demoNavigator: {
     componentsTab: "Components",

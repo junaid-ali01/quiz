@@ -1,4 +1,3 @@
-import { observer } from "mobx-react-lite"
 import React, { ComponentType, FC, useEffect, useMemo } from "react"
 import {
   AccessibilityProps,
@@ -32,8 +31,6 @@ import {
   Toggle,
 } from "../components"
 import { isRTL, translate } from "../i18n"
-import { useStores } from "../models"
-import { Episode } from "../models/Episode"
 import { DemoTabScreenProps } from "../navigators/DemoNavigator"
 import { colors, spacing } from "../theme"
 import { delay } from "../utils/delay"
@@ -139,7 +136,7 @@ export const DemoPodcastListScreen: FC<DemoTabScreenProps<"DemoPodcastList">> = 
   },
 )
 
-const EpisodeCard = observer(function EpisodeCard({
+const EpisodeCard = ()=>{
   episode,
   isFavorite,
   onPressFavorite,
